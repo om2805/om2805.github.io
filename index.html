@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Om Upganlawar – Java Backend Developer</title>
+<meta name="description" content="Om Upganlawar builds Spring Boot backends: secure REST APIs, concurrency-safe bookings and real-time systems. Try the seat-booking demo.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F2F5F9;
+    --surface: #FFFFFF;
+    --ink: #0F1B2D;
+    --muted: #55637A;
+    --line: #D5DCE6;
+    --link: #1F5FD6;
+    --get: #1F5FD6;
+    --post: #14804A;
+    --sans: "Bricolage Grotesque", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0D1521;
+      --surface: #141F30;
+      --ink: #E7EDF6;
+      --muted: #93A2B8;
+      --line: #26354B;
+      --link: #7FA8FF;
+      --get: #2F6BE0;
+      --post: #1B8F58;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D1521;
+    --surface: #141F30;
+    --ink: #E7EDF6;
+    --muted: #93A2B8;
+    --line: #26354B;
+    --link: #7FA8FF;
+    --get: #2F6BE0;
+    --post: #1B8F58;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: calc(72px + env(safe-area-inset-top, 0px)); }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--link); text-underline-offset: 3px; }
+  a:hover { text-decoration-thickness: 2px; }
+  :focus-visible { outline: 2px solid var(--link); outline-offset: 3px; border-radius: 4px; }
+  ul, ol { margin: 0; padding: 0; list-style: none; }
+  h1, h2, h3, h4, p { margin: 0; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  .wrap { width: 100%; max-width: 1080px; margin: 0 auto; padding-inline: 24px; }
+
+  .m {
+    display: inline-block;
+    font: 600 12px/1 var(--mono);
+    letter-spacing: .02em;
+    padding: 5px 8px;
+    border-radius: 4px;
+    color: #fff;
+    background: var(--get);
+    vertical-align: middle;
+  }
+  .m.post { background: var(--post); }
+
+  /* Top bar */
+  .bar-top {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 10;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .bar-top .wrap { display: flex; align-items: center; gap: 24px; height: 56px; }
+  .brand { font-weight: 700; color: var(--ink); text-decoration: none; white-space: nowrap; letter-spacing: -.01em; }
+  .nav { display: flex; gap: 20px; margin-left: auto; overflow-x: auto; scrollbar-width: none; }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav a { color: var(--muted); text-decoration: none; font-size: 15px; white-space: nowrap; padding: 4px 0; }
+  .nav a:hover { color: var(--ink); }
+  @media (max-width: 640px) { .brand { display: none; } .nav { margin-left: 0; } }
+
+  /* Hero */
+  .hero { padding-block: 72px 96px; }
+  .hero .wrap { display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; }
+  @media (max-width: 900px) { .hero .wrap { grid-template-columns: 1fr; gap: 40px; } .hero { padding-block: 48px 64px; } }
+  .hero h1 {
+    font-size: clamp(48px, 9vw, 96px);
+    line-height: .94;
+    font-weight: 800;
+    letter-spacing: -.035em;
+    font-variation-settings: "opsz" 96;
+  }
+  .hero .lede { margin-top: 28px; font-size: clamp(18px, 2.2vw, 21px); max-width: 34em; }
+  .hero .lede span { color: var(--muted); }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 20px; border-radius: 8px;
+    font: 600 15px/1 var(--sans);
+    text-decoration: none;
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    background: transparent;
+    cursor: pointer;
+  }
+  .btn.primary { background: var(--ink); color: var(--bg); }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:disabled { opacity: .5; cursor: default; transform: none; }
+
+  /* Dark code panels (hero response + demo) */
+  .panel {
+    background: #0A1220;
+    color: #C9D5E8;
+    border: 1px solid #1B2A42;
+    border-radius: 12px;
+    overflow: hidden;
+    font: 400 14px/1.7 var(--mono);
+    box-shadow: 0 24px 48px -28px rgba(10, 18, 32, .55);
+  }
+  .panel .req { padding: 14px 18px; border-bottom: 1px solid #1B2A42; display: flex; align-items: center; gap: 10px; color: #E7EDF6; }
+  .panel .status { padding: 10px 18px 0; color: #6FD3A0; font-weight: 600; }
+  .panel pre { margin: 0; padding: 6px 18px 18px; white-space: pre-wrap; word-break: break-word; font: inherit; }
+  .panel .k { color: #8FB4FF; }
+  .panel .s { color: #9BE0B8; }
+  .panel .n { color: #F5C26B; }
+  .panel .p { color: #6B7C96; }
+  .ln { display: block; }
+  .js .seq { opacity: 0; transform: translateY(4px); }
+  .js .seq.on { opacity: 1; transform: none; transition: opacity .25s ease, transform .25s ease; }
+
+  /* Sections */
+  section { padding-block: 72px; border-top: 1px solid var(--line); }
+  .sh { margin-bottom: 40px; max-width: 40em; }
+  .sh h2 { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .sh h2 .path {
+    font-size: clamp(34px, 5.5vw, 56px);
+    font-weight: 700;
+    letter-spacing: -.03em;
+    line-height: 1;
+    font-variation-settings: "opsz" 72;
+  }
+  .sh p { margin-top: 14px; color: var(--muted); }
+
+  /* Case studies */
+  .case { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 36px; margin-bottom: 32px; }
+  .case:last-child { margin-bottom: 0; }
+  .case-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+  .case-head h3 { font-size: clamp(26px, 3.6vw, 40px); font-weight: 700; letter-spacing: -.025em; line-height: 1.1; }
+  .route { display: block; width: 100%; font: 400 13px var(--mono); color: var(--muted); }
+  .case-copy { display: grid; grid-template-columns: 1fr 1fr; gap: 32px 48px; margin-top: 28px; }
+  .case-copy h4 { font-size: 15px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+  .case-copy p { max-width: 34em; }
+  .case-copy.one { grid-template-columns: 1fr; }
+  .case-copy.one p { max-width: 44em; }
+  @media (max-width: 860px) { .case-copy { grid-template-columns: 1fr; gap: 24px; } .case { padding: 24px 20px; } }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+  .tag { font: 400 13px var(--mono); padding: 5px 10px; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); background: var(--bg); }
+
+  /* Flow diagrams */
+  .flow { display: flex; gap: 28px; margin-top: 32px; }
+  .flow li { flex: 1 1 0; position: relative; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); font-weight: 600; line-height: 1.35; }
+  .flow li span { display: block; margin-top: 4px; font-weight: 400; font-size: 14px; color: var(--muted); }
+  .flow li.hot { border-color: var(--link); }
+  .flow li:not(:last-child)::after { content: ""; position: absolute; left: 100%; top: 50%; width: 28px; height: 2px; background: var(--muted); }
+  @media (max-width: 720px) {
+    .flow { flex-direction: column; gap: 24px; }
+    .flow li:not(:last-child)::after { left: 50%; top: 100%; width: 2px; height: 24px; }
+  }
+
+  /* Booking demo */
+  .demo { margin-top: 36px; padding: 28px; font: 400 15px/1.6 var(--sans); }
+  .demo h4 { font-size: clamp(20px, 2.6vw, 26px); font-weight: 700; letter-spacing: -.02em; color: #E7EDF6; }
+  .demo .intro { margin-top: 8px; color: #93A2B8; max-width: 40em; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-top: 24px; }
+  .seg { position: relative; display: inline-flex; gap: 2px; padding: 3px; margin: 0; border: 1px solid #2A3B57; border-radius: 8px; min-width: 0; }
+  .seg input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg label { padding: 9px 14px; border-radius: 6px; cursor: pointer; font: 600 14px var(--sans); color: #93A2B8; }
+  .seg input:checked + label { background: #E7EDF6; color: #0A1220; }
+  .seg input:focus-visible + label { outline: 2px solid #8FB4FF; outline-offset: 2px; }
+  .demo .btn { background: #E7EDF6; color: #0A1220; border-color: #E7EDF6; }
+  .demo .btn:focus-visible { outline-color: #8FB4FF; }
+  .seats { display: flex; gap: 10px; margin: 28px 0 8px; flex-wrap: wrap; align-items: stretch; }
+  .seat { width: 68px; padding: 12px 6px; text-align: center; border-radius: 10px 10px 4px 4px; font: 600 13px var(--mono); border: 1.5px solid #2A3B57; color: #93A2B8; display: flex; flex-direction: column; justify-content: center; }
+  .seat small { display: block; margin-top: 4px; font: 400 12px var(--sans); }
+  .seat.taken { background: #16233A; opacity: .65; }
+  .seat.target { width: 132px; border-color: #8FB4FF; color: #E7EDF6; }
+  .seat.booked { background: #1F5FD6; border-color: #1F5FD6; color: #fff; }
+  .seat.double { background: #B3261E; border-color: #FF9B8F; color: #fff; }
+  .log { margin-top: 12px; }
+  .log li { display: grid; grid-template-columns: 64px 1fr auto; gap: 4px 14px; padding: 12px 0; border-top: 1px solid #1B2A42; align-items: baseline; font: 400 14px/1.5 var(--mono); animation: rowin .3s ease; }
+  .log li.hint { display: block; font: 400 15px var(--sans); color: #93A2B8; animation: none; }
+  .who { font-weight: 600; }
+  .who.asha { color: #8FB4FF; }
+  .who.ravi { color: #F5C26B; }
+  .res { text-align: right; font-weight: 600; }
+  .res.ok { color: #6FD3A0; }
+  .res.bad { color: #FF9B8F; }
+  .res.wait { color: #F5C26B; }
+  .res.neutral { color: #93A2B8; font-weight: 400; }
+  .verdict { margin-top: 16px; padding-top: 16px; border-top: 1px solid #1B2A42; font: 600 17px/1.45 var(--sans); min-height: 1.5em; }
+  .verdict.bad { color: #FF9B8F; }
+  .verdict.good { color: #6FD3A0; }
+  .demo .foot { margin-top: 16px; font-size: 13px; color: #6B7C96; }
+  @keyframes rowin { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @media (max-width: 560px) {
+    .demo { padding: 20px 16px; }
+    .log li { grid-template-columns: 56px 1fr; }
+    .res { grid-column: 2; text-align: left; }
+    .seat { width: 56px; }
+    .seat.target { width: 112px; }
+  }
+
+  /* About */
+  .about { display: grid; grid-template-columns: 1.2fr 1fr; gap: 56px; }
+  @media (max-width: 860px) { .about { grid-template-columns: 1fr; gap: 40px; } }
+  .about .story { font-size: clamp(19px, 2.4vw, 23px); line-height: 1.5; max-width: 30em; }
+  .edu li { padding: 16px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; }
+  .edu li:first-child { padding-top: 0; }
+  .edu strong { font-weight: 600; }
+  .edu .where { color: var(--muted); font-size: 15px; grid-column: 1; }
+  .edu .score { font: 600 15px var(--mono); grid-row: 1; grid-column: 2; }
+  .wins { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 56px; }
+  @media (max-width: 860px) { .wins { grid-template-columns: 1fr; } }
+  .wins li { border-left: 3px solid var(--link); padding: 4px 0 4px 20px; }
+  .wins h3 { font-size: 19px; font-weight: 700; letter-spacing: -.01em; line-height: 1.3; }
+  .wins p { margin-top: 8px; color: var(--muted); font-size: 16px; }
+
+  /* Skills */
+  .skills li { display: grid; grid-template-columns: 220px 1fr; gap: 12px 24px; padding: 20px 0; border-top: 1px solid var(--line); }
+  .skills li:last-child { border-bottom: 1px solid var(--line); }
+  .skills h3 { font-size: 17px; font-weight: 600; }
+  .skills .tags { margin-top: 0; }
+  .skills .tag { color: var(--ink); background: var(--surface); }
+  @media (max-width: 640px) { .skills li { grid-template-columns: 1fr; } }
+
+  /* Profiles */
+  .profiles { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .profiles { grid-template-columns: 1fr; } }
+  .profiles a { display: block; padding: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--ink); }
+  .profiles a:hover { border-color: var(--link); }
+  .profiles h3 { font-size: 24px; font-weight: 700; letter-spacing: -.02em; }
+  .profiles p { margin-top: 6px; color: var(--muted); font-size: 16px; }
+  .profiles .url { display: block; margin-top: 14px; font: 400 13px var(--mono); color: var(--link); word-break: break-all; }
+
+  /* Contact */
+  .contact .big { font-size: clamp(24px, 4.4vw, 44px); font-weight: 700; letter-spacing: -.03em; line-height: 1.15; word-break: break-word; }
+  .contact .big a { color: var(--ink); text-decoration-color: var(--link); text-decoration-thickness: 3px; }
+  .contact .big a:hover { color: var(--link); }
+
+  footer { padding-block: 40px 56px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .js .seq { opacity: 1; transform: none; }
+    .btn:hover { transform: none; }
+    .log li { animation: none; }
+  }
+</style>
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+
+<header class="bar-top">
+  <div class="wrap">
+    <a class="brand" href="#top">Om Upganlawar</a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#projects">Projects</a>
+      <a href="#experience">Experience</a>
+      <a href="#about">About</a>
+      <a href="#skills">Skills</a>
+      <a href="#profiles">Profiles</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <h1>Om<br>Upganlawar</h1>
+        <p class="lede">Java backend developer. I build REST APIs with Spring Boot, secure them with JWT, and make them hold up when two people try to book the same seat. <span>Computer science student in Nagpur.</span></p>
+        <div class="actions">
+          <a class="btn primary" href="#demo">Try the seat-booking demo</a>
+          <a class="btn" href="mailto:omupganlawar@gmail.com">Email me</a>
+        </div>
+      </div>
+
+      <div class="panel" role="img" aria-label="Sample API response describing Om: backend developer working with Java, Spring Boot, Spring Security, JPA and MySQL, who built a movie ticket booking platform and a real-time chat app.">
+        <div class="req"><span class="m">GET</span><span>/om-upganlawar</span></div>
+        <div class="status seq">200 OK</div>
+        <pre aria-hidden="true"><span class="ln seq"><span class="p">{</span></span>
+<span class="ln seq">  <span class="k">"role"</span><span class="p">:</span> <span class="s">"Backend developer"</span><span class="p">,</span></span>
+<span class="ln seq">  <span class="k">"stack"</span><span class="p">:</span> <span class="p">[</span><span class="s">"Java"</span><span class="p">,</span> <span class="s">"Spring Boot"</span><span class="p">,</span> <span class="s">"Spring Security"</span><span class="p">,</span> <span class="s">"JPA"</span><span class="p">,</span> <span class="s">"MySQL"</span><span class="p">],</span></span>
+<span class="ln seq">  <span class="k">"studying"</span><span class="p">:</span> <span class="s">"B.Tech CSE, RCOEM Nagpur"</span><span class="p">,</span></span>
+<span class="ln seq">  <span class="k">"in_production"</span><span class="p">:</span> <span class="s">"School certificate generator"</span><span class="p">,</span></span>
+<span class="ln seq">  <span class="k">"built"</span><span class="p">:</span> <span class="p">[</span><span class="s">"Movie ticket booking"</span><span class="p">,</span> <span class="s">"Real-time chat"</span><span class="p">]</span></span>
+<span class="ln seq"><span class="p">}</span></span></pre>
+      </div>
+    </div>
+  </div>
+
+  <section id="projects">
+    <div class="wrap">
+      <header class="sh">
+        <h2><span class="m">GET</span><span class="path">/projects</span></h2>
+        <p>Two backend projects, explained by the problem each one solves.</p>
+      </header>
+
+      <article class="case">
+        <div class="case-head">
+          <span class="m">GET</span>
+          <h3>Movie Ticket Booking Platform</h3>
+          <span class="route">/projects/movie-ticket-booking</span>
+        </div>
+        <div class="case-copy">
+          <div>
+            <h4>The problem</h4>
+            <p>Seats are the one thing you can't sell twice. Two people can open the same show and pick the same seat within milliseconds, and if the app checks availability and saves the booking as separate steps, both requests can pass the check.</p>
+          </div>
+          <div>
+            <h4>How I solved it</h4>
+            <p>I lock the seat while a booking is being made, using pessimistic locking with JPA, so the second request waits and then finds the seat gone. Around that sits JWT login with user and admin roles, REST APIs for movies, theaters, shows, bookings and payments, city-wise show filtering and real-time seat availability.</p>
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag">Spring Boot</span><span class="tag">Spring Security (JWT)</span><span class="tag">React</span><span class="tag">JPA</span><span class="tag">MySQL</span>
+        </div>
+
+        <div class="panel demo" id="demo">
+          <h4>Try it: two people, one seat</h4>
+          <p class="intro">Asha and Ravi both press Book on seat F7 at the same moment. Choose how the server handles it, then send both requests and watch what happens.</p>
+
+          <div class="controls">
+            <fieldset class="seg">
+              <legend class="sr">Locking mode</legend>
+              <input type="radio" id="mode-off" name="mode" value="off" checked><label for="mode-off">No locking</label>
+              <input type="radio" id="mode-on" name="mode" value="on"><label for="mode-on">Pessimistic lock</label>
+            </fieldset>
+            <button class="btn" id="run" type="button">Send both requests</button>
+          </div>
+
+          <div class="seats" aria-hidden="true">
+            <div class="seat taken">F5<small>Taken</small></div>
+            <div class="seat">F6<small>Free</small></div>
+            <div class="seat target" id="seat">F7<small id="seat-state">Available</small></div>
+            <div class="seat">F8<small>Free</small></div>
+            <div class="seat taken">F9<small>Taken</small></div>
+          </div>
+
+          <ol class="log" id="log" aria-live="polite"></ol>
+          <p class="verdict" id="verdict" aria-live="polite"></p>
+          <p class="foot">A simplified simulation that runs in your browser. It shows the idea behind the locking, not my exact code.</p>
+        </div>
+      </article>
+
+      <article class="case">
+        <div class="case-head">
+          <span class="m">GET</span>
+          <h3>Real-Time Chat Application</h3>
+          <span class="route">/projects/realtime-chat</span>
+        </div>
+        <div class="case-copy">
+          <div>
+            <h4>The problem</h4>
+            <p>A chat is only useful if everyone in the room sees a message the moment it's sent, without refreshing the page, and if people can tell who has come and gone.</p>
+          </div>
+          <div>
+            <h4>How I solved it</h4>
+            <p>A Spring Boot server speaks STOMP over WebSockets. People join a room and get its message history, everyone else sees a JOIN or LEAVE notice, and each message reaches the whole room instantly. The whole app runs in Docker with WebSocket support.</p>
+          </div>
+        </div>
+        <ol class="flow" aria-label="How a message travels">
+          <li>Browser<span>Sends a message</span></li>
+          <li class="hot">STOMP over WebSocket<span>One open connection</span></li>
+          <li>Spring Boot<span>Routes it to the room</span></li>
+          <li>Everyone in the room<span>Sees it instantly</span></li>
+        </ol>
+        <div class="tags">
+          <span class="tag">Spring Boot</span><span class="tag">WebSockets (STOMP)</span><span class="tag">JavaScript</span><span class="tag">Docker</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section id="experience">
+    <div class="wrap">
+      <header class="sh">
+        <h2><span class="m">GET</span><span class="path">/experience</span></h2>
+        <p>Software I built for a real client, and they still use it.</p>
+      </header>
+      <article class="case">
+        <div class="case-head">
+          <span class="m">GET</span>
+          <h3>School Leaving Certificate Generation System</h3>
+          <span class="route">Freelance software developer</span>
+        </div>
+        <div class="case-copy one">
+          <p>A school needed Leaving Certificates in its own fixed format. I built a JavaFX desktop app to manage student records and generate each certificate from an HTML template, with the data stored in SQLite through JDBC. The school uses it today.</p>
+        </div>
+        <ol class="flow" aria-label="How a certificate is produced">
+          <li>Student record<span>Stored in SQLite via JDBC</span></li>
+          <li class="hot">HTML template<span>The school's fixed layout</span></li>
+          <li>Leaving Certificate<span>Generated in the app</span></li>
+        </ol>
+        <div class="tags">
+          <span class="tag">Java</span><span class="tag">JavaFX</span><span class="tag">SQLite</span><span class="tag">JDBC</span><span class="tag">HTML</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="wrap">
+      <header class="sh">
+        <h2><span class="m">GET</span><span class="path">/about</span></h2>
+      </header>
+      <div class="about">
+        <p class="story">I like the part of software you don't see: the API, the database, and what happens when a hundred requests arrive at once. I work mostly in Java and Spring Boot, and my projects so far cover authentication, data persistence, concurrent bookings and layered application design.</p>
+        <ul class="edu" aria-label="Education">
+          <li>
+            <strong>B.Tech, Computer Science and Engineering</strong>
+                <span class="where">Shri Ramdeobaba College of Engineering and Management, Nagpur</span>
+          </li>
+          <li>
+            <strong>Class XII</strong>
+            <span class="where">Dr. Khatri Junior College, Chandrapur</span>
+          </li>
+          <li>
+            <strong>Class X</strong>
+            <span class="where">BJM Carmel Academy, Chandrapur</span>
+          </li>
+        </ul>
+      </div>
+      <ul class="wins">
+        <li>
+          <h3>Byte-Quest hackathon, top 10 teams</h3>
+          <p>Selected among the top 10 of more than 1,000 participants in a national-level hackathon run by RBU, Nagpur, with GeeksforGeeks.</p>
+        </li>
+        <li>
+          <h3>Leprosy Awareness and Fundraiser website</h3>
+          <p>A project for Anandwan, Warora, recognized as one of the best college projects and shown to the National Board of Accreditation committee.</p>
+        </li>
+        <li>
+          <h3>Java Full Stack Development Program</h3>
+          <p>Certification from Code For Success, October 2025.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="wrap">
+      <header class="sh">
+        <h2><span class="m">GET</span><span class="path">/skills</span></h2>
+      </header>
+      <ul class="skills">
+        <li><h3>Backend</h3><div class="tags"><span class="tag">Java</span><span class="tag">Spring Boot</span><span class="tag">Spring MVC</span><span class="tag">Spring Data JPA</span><span class="tag">Spring Security</span><span class="tag">REST APIs</span><span class="tag">JDBC</span></div></li>
+        <li><h3>Databases</h3><div class="tags"><span class="tag">MySQL</span><span class="tag">SQLite</span><span class="tag">SQL</span></div></li>
+        <li><h3>Also used</h3><div class="tags"><span class="tag">React</span><span class="tag">JavaScript</span><span class="tag">WebSockets (STOMP)</span><span class="tag">JavaFX</span><span class="tag">Docker</span></div></li>
+        <li><h3>Foundations</h3><div class="tags"><span class="tag">Data Structures and Algorithms</span><span class="tag">OOP</span><span class="tag">DBMS</span><span class="tag">Operating Systems</span><span class="tag">Computer Networks</span></div></li>
+        <li><h3>Tools</h3><div class="tags"><span class="tag">Git</span><span class="tag">GitHub</span><span class="tag">Maven</span></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="profiles">
+    <div class="wrap">
+      <header class="sh">
+        <h2><span class="m">GET</span><span class="path">/profiles</span></h2>
+        <p>See my code and practice for yourself.</p>
+      </header>
+      <div class="profiles">
+        <a href="https://github.com/om2805" target="_blank" rel="noopener">
+          <h3>GitHub</h3>
+          <p>My code and projects.</p>
+          <span class="url">github.com/om2805</span>
+        </a>
+        <a href="https://leetcode.com/u/Clutch2805/" target="_blank" rel="noopener">
+          <h3>LeetCode</h3>
+          <p>Problem solving in Java.</p>
+          <span class="url">leetcode.com/u/Clutch2805</span>
+        </a>
+        <a href="https://codolio.com/profile/Om2805" target="_blank" rel="noopener">
+          <h3>Codolio</h3>
+          <p>My coding activity in one place.</p>
+          <span class="url">codolio.com/profile/Om2805</span>
+        </a>
+        <a href="https://linkedin.com/in/om-upganlawar" target="_blank" rel="noopener">
+          <h3>LinkedIn</h3>
+          <p>Experience and education.</p>
+          <span class="url">linkedin.com/in/om-upganlawar</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact">
+    <div class="wrap">
+      <header class="sh">
+        <h2><span class="m post">POST</span><span class="path">/contact</span></h2>
+        <p>Hiring for a backend role or internship, or have a project in mind? Email is the fastest way to reach me.</p>
+      </header>
+      <p class="big"><a href="mailto:omupganlawar@gmail.com">omupganlawar@gmail.com</a></p>
+      <div class="actions">
+        <a class="btn primary" href="mailto:omupganlawar@gmail.com?subject=Hello%20Om">Send an email</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">© 2026 Om Upganlawar</div>
+</footer>
+
+<script>
+  (function () {
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* Hero: response lines appear once on load */
+    var items = Array.prototype.slice.call(document.querySelectorAll('.seq'));
+    if (!reduce) {
+      items.forEach(function (el, i) {
+        setTimeout(function () { el.classList.add('on'); }, 350 + i * 130);
+      });
+    }
+
+    /* Seat-booking demo */
+    var STEPS = {
+      off: [
+        ['asha', 'Check seat F7', 'available', 'neutral'],
+        ['ravi', 'Check seat F7', 'available', 'neutral'],
+        ['asha', 'Save booking for F7', '201 Created', 'ok'],
+        ['ravi', 'Save booking for F7', '201 Created', 'bad']
+      ],
+      on: [
+        ['asha', 'Lock seat F7 (SELECT … FOR UPDATE)', 'lock acquired', 'ok'],
+        ['ravi', 'Lock seat F7', 'waiting for Asha', 'wait'],
+        ['asha', 'Save booking, commit, release lock', '201 Created', 'ok'],
+        ['ravi', 'Lock acquired, re-check seat F7', '409 Conflict: seat taken', 'wait']
+      ]
+    };
+    var log = document.getElementById('log');
+    var verdict = document.getElementById('verdict');
+    var seat = document.getElementById('seat');
+    var seatState = document.getElementById('seat-state');
+    var runBtn = document.getElementById('run');
+    var radios = document.querySelectorAll('input[name="mode"]');
+    var timers = [];
+
+    function mode() { return document.querySelector('input[name="mode"]:checked').value; }
+
+    function reset() {
+      timers.forEach(clearTimeout);
+      timers = [];
+      log.innerHTML = '';
+      var hint = document.createElement('li');
+      hint.className = 'hint';
+      hint.textContent = 'Nothing sent yet. Press \u201CSend both requests\u201D.';
+      log.appendChild(hint);
+      verdict.textContent = '';
+      verdict.className = 'verdict';
+      seat.className = 'seat target';
+      seatState.textContent = 'Available';
+      runBtn.disabled = false;
+      runBtn.textContent = 'Send both requests';
+    }
+
+    function addRow(step) {
+      var hint = log.querySelector('.hint');
+      if (hint) hint.remove();
+      var li = document.createElement('li');
+      var who = document.createElement('span');
+      who.className = 'who ' + step[0];
+      who.textContent = step[0] === 'asha' ? 'Asha' : 'Ravi';
+      var what = document.createElement('span');
+      what.textContent = step[1];
+      var res = document.createElement('span');
+      res.className = 'res ' + step[3];
+      res.textContent = step[2];
+      li.appendChild(who); li.appendChild(what); li.appendChild(res);
+      log.appendChild(li);
+    }
+
+    function finish(m) {
+      if (m === 'off') {
+        seat.className = 'seat target double';
+        seatState.textContent = 'Sold twice';
+        verdict.className = 'verdict bad';
+        verdict.textContent = 'Seat F7 is sold twice. Both checks ran before either save, so both passed.';
+      } else {
+        seat.className = 'seat target booked';
+        seatState.textContent = 'Booked by Asha';
+        verdict.className = 'verdict good';
+        verdict.textContent = 'One booking. Ravi is told the seat is gone instead of getting a duplicate ticket.';
+      }
+      runBtn.disabled = false;
+      runBtn.textContent = 'Run again';
+    }
+
+    function run() {
+      reset();
+      runBtn.disabled = true;
+      var m = mode();
+      var s = STEPS[m];
+      s.forEach(function (st, i) {
+        timers.push(setTimeout(function () {
+          addRow(st);
+          if (i === s.length - 1) finish(m);
+        }, reduce ? 0 : (i + 1) * 850));
+      });
+    }
+
+    runBtn.addEventListener('click', run);
+    Array.prototype.forEach.call(radios, function (r) { r.addEventListener('change', reset); });
+    reset();
+  })();
+</script>
+</body>
+</html>
